@@ -6,6 +6,7 @@ import json
 import requests
 from bs4 import BeautifulSoup
 import os
+import time
 
 telephone = "xxx"
 # 进校还是出校
@@ -197,7 +198,7 @@ class Report(object):
             "YY": in_or_out_reason,
             "CXSY": description,
             "NQWDD": destination,
-            "SQHXRQQS": "2021-10-27",
+            "SQHXRQQS": time.strftime("%Y-%m-%d", time.localtime()),
             "BZ": "",
             "_o": {
                 "XH": None,
