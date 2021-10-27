@@ -1,10 +1,23 @@
 # -*- coding:utf-8 -*-
-# @Time : 2020/3/8 20:08
-# @Author : naihai
+# @Author : naihai/babydragon
+
+
 import json
 import requests
 from bs4 import BeautifulSoup
 import os
+
+telephone = "xxx"
+# 进校还是出校
+in_or_out = "出校"
+in_or_out_text = "出校 Exit"
+# 进出校事由
+in_or_out_reason_text = "出校科研 Off-campus Research"
+in_or_out_reason = "出校科研"
+# 事由描述
+description = "实验室双清"
+# 校外往来地点
+destination = "双清大厦"
 
 headers = {
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
@@ -25,7 +38,7 @@ class Report(object):
         self.session = requests.session()
         self.session.headers.update(headers)
 
-        self.server_id = "d42b05be-1ad8-4d96-8c1e-14be2bb24e26"
+        self.server_id = "0ce14db2-d40e-4052-a681-e240fe6c29ee"
         self.resource_id = ""
         self.process_id = ""
         self.user_id = ""
@@ -91,6 +104,23 @@ class Report(object):
         procID
         privilegeId
         """
+        check_url = "https://thos.tsinghua.edu.cn/fp/fp/serveapply/checkService"
+        headers_ = {}
+        # headers_ = self.session.headers
+        headers_["Referer"] = self.common_referer
+        headers_["Accept"] = 'text/plain, */*; q=0.01'
+        headers_["Accept-Encoding"] = 'gzip, deflate, br'
+        headers_["accept-language"] = 'zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7'
+        headers_["Cache-Control"] = 'no-cache'
+        headers_["Origin"] = 'https://thos.tsinghua.edu.cn'
+        headers_["X-Requested-With"] = "XMLHttpRequest"
+        headers_["Content-Length"] = '50'
+        headers_["content-type"] = 'application/json;charset=UTF-8'
+        headers_["pragma"] = 'no-cache'
+        headers_["user-agent"] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.54 Safari/537.36'
+        self.session.headers = headers_
+        res = self.session.post(url=check_url, data=json.dumps({"serveID": self.server_id}))
+        print(res.text)
         url_ = "https://thos.tsinghua.edu.cn/fp/fp/serveapply/getServeApply"
 
         headers_ = self.session.headers
@@ -104,6 +134,7 @@ class Report(object):
         data = {"serveID": self.server_id, "from": "hall"}
         try:
             response = self.session.post(url=url_, data=json.dumps(data))
+            print(response.status_code)
             result = response.json()
 
             self.resource_id = result["resource_id"]
@@ -141,6 +172,56 @@ class Report(object):
         self.form_data = eval(form_data_str, type('js', (dict,), dict(__getitem__=lambda k, n: n))())
 
     def __submit_report(self):
+        obj_keys = self.form_data["body"]["dataStores"]
+        for key in obj_keys:
+            if '-' in key:
+                key_val = key
+                break
+        student_id = self.form_data["body"]["dataStores"]["variable"]["rowSet"]["primary"][8]["value"]
+        name = self.form_data["body"]["dataStores"]["variable"]["rowSet"]["primary"][9]["value"]
+        department = self.form_data["body"]["dataStores"]["variable"]["rowSet"]["primary"][10]["value"]
+        unit_id = self.form_data["body"]["dataStores"]["variable"]["rowSet"]["primary"][11]["value"]
+        student_type = self.form_data["body"]["dataStores"]["variable"]["rowSet"]["primary"][12]["value"]
+        self.form_data["body"]["dataStores"][key_val]["rowSet"]["primary"].append({
+            "XH": student_id,
+            # "_t": 3,
+            "XM": name,
+            "SZYX": department,
+            "BJ": "",
+            "YXDM": unit_id,
+            "XSLX": student_type,
+            "LXDH": telephone,
+            "JCX_TEXT": in_or_out_text,
+            "JCX": in_or_out,
+            "YY_TEXT": in_or_out_reason_text,
+            "YY": in_or_out_reason,
+            "CXSY": description,
+            "NQWDD": destination,
+            "SQHXRQQS": "2021-10-27",
+            "BZ": "",
+            "_o": {
+                "XH": None,
+                "XM": None,
+                "SZYX": None,
+                "BJ": None,
+                "YXDM": None,
+                "XSLX": None,
+                "LXDH": None,
+                "JCX_TEXT": None,
+                "JCX": None,
+                "YY_TEXT": None,
+                "YY": None,
+                "CXSY": None,
+                "NQWDD": None,
+                "SQHXRQQS": None,
+                "BZ": None
+            }
+        })
+        # self.form_data["body"]["dataStores"]["variable"]["rowSet"]["primary"][0]["value"] = '2020214026'
+        # self.form_data["body"]["dataStores"]["variable"]["rowSet"]["primary"][1]["value"] = '硕士研究生'
+        # self.form_data["body"]["dataStores"]["variable"]["rowSet"]["primary"][2]["value"] = ''
+        # self.form_data["body"]["dataStores"]["variable"]["rowSet"]["primary"][3]["value"] = '出校科研 Off-campus Research'
+        # self.form_data["body"]["dataStores"]["variable"]["rowSet"]["primary"][4]["value"] = ''
         url_ = "https://thos.tsinghua.edu.cn/fp/formParser?" \
                "status=update&" \
                "formid={0}&" \
@@ -168,9 +249,9 @@ class Report(object):
 
         response = self.session.post(url_, data=json.dumps(self.form_data), headers=headers_)
         if response.status_code == requests.codes.OK:
-            print("提交健康日报成功")
+            print("提交申请出校成功")
         else:
-            print("提交健康日报失败")
+            print("提交申请出校失败")
 
 
 def load_info():
@@ -188,6 +269,7 @@ if __name__ == '__main__':
         print("User info found in env")
         user_name = os.getenv("USER_NAME")
         user_pass = os.getenv("USER_PASS")
+        telephone = os.getenv("USER_TELEPHONE")
     else:
         user_name, user_pass = load_info()
     Report(user_name, user_pass).run()
