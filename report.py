@@ -16,9 +16,9 @@ in_or_out_text = "出校 Exit"
 in_or_out_reason_text = "出校科研 Off-campus Research"
 in_or_out_reason = "出校科研"
 # 事由描述
-description = "实验室双清"
+description = "xxx"
 # 校外往来地点
-destination = "双清大厦"
+destination = "xxx"
 
 headers = {
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
@@ -218,11 +218,6 @@ class Report(object):
                 "BZ": None
             }
         })
-        # self.form_data["body"]["dataStores"]["variable"]["rowSet"]["primary"][0]["value"] = '2020214026'
-        # self.form_data["body"]["dataStores"]["variable"]["rowSet"]["primary"][1]["value"] = '硕士研究生'
-        # self.form_data["body"]["dataStores"]["variable"]["rowSet"]["primary"][2]["value"] = ''
-        # self.form_data["body"]["dataStores"]["variable"]["rowSet"]["primary"][3]["value"] = '出校科研 Off-campus Research'
-        # self.form_data["body"]["dataStores"]["variable"]["rowSet"]["primary"][4]["value"] = ''
         url_ = "https://thos.tsinghua.edu.cn/fp/formParser?" \
                "status=update&" \
                "formid={0}&" \
